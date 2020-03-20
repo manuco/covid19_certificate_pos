@@ -2,3 +2,5 @@
 local_env
 ui_*
 **/__pycache__
+build
+dist
