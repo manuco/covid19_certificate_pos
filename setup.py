@@ -7,6 +7,7 @@ setup(
     author="Emmanuel C",
     author_email="manuco@users.noreply.github.com",
     long_description=open('README.txt').read(),
+    download_url="https://github.com/manuco/covid19_certificate_pos/archive/1.0.tar.gz",
     packages=["attestation"],
     install_requires=[
         "python-escpos >= 3.0a, < 3.1",
