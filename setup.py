@@ -7,9 +7,14 @@ setup(
     author="Emmanuel C",
     author_email="manuco@users.noreply.github.com",
     long_description=open('README.txt').read(),
-    py_modules=["attestation"],
+    packages=["attestation"],
     install_requires=[
         "python-escpos >= 3.0a, < 3.1",
         "PyQt5 < 5.15",
-    ]
+    ],
+    entry_points = {
+        'console_scripts': [
+            'att_covid19 = attestation:run_ui',
+        ],
+    }
 )

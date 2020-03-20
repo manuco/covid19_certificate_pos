@@ -1,10 +1,10 @@
-all: ui_main.py ui_peopleEdit.py
+all: attestation/ui_main.py attestation/ui_peopleEdit.py
 
 clean:
-	rm -rf ui_main.py ui_peopleEdit.py __pycache__ *.egg_info
+	rm -rf attestation/ui_main.py attestation/ui_peopleEdit.py __pycache__ *.egg-info
 
-ui_main.py: main.ui
-	pyuic5 main.ui > ui_main.py
+attestation/ui_main.py: main.ui
+	pyuic5 main.ui > attestation/ui_main.py
 
-ui_peopleEdit.py: peopleEdit.ui
-	pyuic5 peopleEdit.ui > ui_peopleEdit.py
+attestation/ui_peopleEdit.py: peopleEdit.ui
+	pyuic5 peopleEdit.ui > attestation/ui_peopleEdit.py

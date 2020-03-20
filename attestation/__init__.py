@@ -172,7 +172,7 @@ class PeopleDialog(qtw.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
 
-        from ui_peopleEdit import Ui_peopleDiag
+        from .ui_peopleEdit import Ui_peopleDiag
 
         self.ui = Ui_peopleDiag()
         self.ui.setupUi(self)
@@ -210,7 +210,7 @@ class MainForm(qtw.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        from ui_main import Ui_Form
+        from .ui_main import Ui_Form
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.reloadList()
