@@ -1,7 +1,7 @@
 all: ui_main.py ui_peopleEdit.py
 
 clean:
-	rm ui_main.py ui_peopleEdit.py
+	rm -rf ui_main.py ui_peopleEdit.py __pycache__ *.egg_info
 
 ui_main.py: main.ui
 	pyuic5 main.ui > ui_main.py
