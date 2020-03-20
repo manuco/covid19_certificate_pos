@@ -6,7 +6,7 @@ setup(
     license='GPL v3',
     author="Emmanuel C",
     author_email="manuco@users.noreply.github.com",
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
     download_url="https://github.com/manuco/covid19_certificate_pos/archive/1.0.tar.gz",
     packages=["attestation"],
     install_requires=[
