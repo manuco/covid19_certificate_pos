@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>590</width>
+    <height>248</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Attestation de déplacement dérogatoire Covid-19</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <widget class="QComboBox" name="peopleBox">
+       <property name="insertPolicy">
+        <enum>QComboBox::InsertAlphabetically</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="addPeople">
+       <property name="text">
+        <string>+</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="delPeople">
+       <property name="text">
+        <string>-</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="confButton">
+       <property name="text">
+        <string>C</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="work">
+     <property name="text">
+      <string>Pour aller au travail</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="shopping">
+     <property name="text">
+      <string>Pour aller faire les courses</string>
+     </property>
+     <property name="autoDefault">
+      <bool>true</bool>
+     </property>
+     <property name="default">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="health">
+     <property name="text">
+      <string>Pour aller dans un établissement médical</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="family">
+     <property name="text">
+      <string>Pour aller voir la famille</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="walk">
+     <property name="text">
+      <string>Pour pratiquer une activité physique</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>peopleBox</tabstop>
+  <tabstop>work</tabstop>
+  <tabstop>shopping</tabstop>
+  <tabstop>health</tabstop>
+  <tabstop>family</tabstop>
+  <tabstop>walk</tabstop>
+  <tabstop>addPeople</tabstop>
+  <tabstop>delPeople</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

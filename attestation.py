@@ -1,10 +1,66 @@
+
+import os
+import sys
 import datetime
+import pathlib
+
+import sqlite3
+
 import escpos.printer as ep
 
-def get_printer():
-    p = ep.Usb(0x04b8, 0x0e03)
+import PyQt5.QtCore as qtc
+import PyQt5.QtGui as qtg
+import PyQt5.QtWidgets as qtw
 
+
+
+
+kinds = {
+    "work": "déplacements entre le domicile et le lieu d’exercice de l’activité professionnelle, lorsqu’ils sont indispensables à l’exercice d’activités ne pouvant être organisées sous forme de télétravail (sur justificatif permanent) ou déplacements professionnels ne pouvant être différés.",
+    "shopping": "déplacements pour effectuer des achats de première nécessité dans des établissements autorisés (liste sur gouvernement.fr).",
+    "health": "déplacement pour motif de santé.",
+    "family": "déplacements pour motif familial impérieux, pour l’assistance aux personnes vulnérables ou la garde d’enfants.",
+    "walk": "déplacements brefs, à proximité du domicile, liés à l’activité physique individuelle des personnes, à l’exclusion de toute pratique sportive collective, et aux besoins des animaux de compagnie.",
+}
+
+def get_db():
+
+    db_file = pathlib.Path(qtc.QStandardPaths.writableLocation(qtc.QStandardPaths.ConfigLocation)) / "covid19pos.conf"
+
+    db = sqlite3.connect(str(db_file))
+    c = db.cursor()
+    c.execute("""create table if not exists printer_conf (
+        conf_key text PRIMARY KEY,
+        conf_value text
+    )""")
+
+    c.execute("""create table if not exists peoples (
+        name text PRIMARY KEY,
+        gender text,
+        birthdate text,
+        address text,
+        location text
+    )""")
+
+    db.commit()
+
+    return db
+
+
+def get_printer():
+
+    db = get_db()
+    c = db.cursor()
+    c.execute("select conf_value from printer_conf where conf_key='usb_major';")
+    major = int(c.fetchone()[0], 16)
+
+    c.execute("select conf_value from printer_conf where conf_key='usb_minor';")
+    minor = int(c.fetchone()[0], 16)
+
+    c.close()
+    p = ep.Usb(major, minor)
     return p
+
 
 def print_title(p):
     p.set(font="a")
@@ -17,7 +73,6 @@ def print_title(p):
     p.text("1er du décret du 16 mars 2020\nportant réglementation des déplacements dans le cadre de\nla lutte contre la propagation du virus Covid-19 :")
     p.ln(2)
     p.set(align="left", font="a")
-
 
 
 def print_personnal_informations(p, params):
@@ -42,10 +97,11 @@ def print_personnal_informations(p, params):
     p.textln("Demeurant")
 
     p.set(bold=True)
-    for line in params["address"]:
+    for line in params["address"].split("\n"):
         p.text("\t\t")
         p.textln(line)
     p.ln()
+
 
 def format_testimony(text, prefix_len=0, max_len=48):
 
@@ -65,19 +121,12 @@ def format_testimony(text, prefix_len=0, max_len=48):
     lines.append(" ".join(line))
     return lines
 
+
 def print_with_prefix(p, text, fl_prefix=""):
     p.text(fl_prefix)
     for line in format_testimony(text, prefix_len=len(fl_prefix)):
         p.textln(line)
         p.text(" " * len(fl_prefix))
-
-kinds = {
-    "work": "déplacements entre le domicile et le lieu d’exercice de l’activité professionnelle, lorsqu’ils sont indispensables à l’exercice d’activités ne pouvant être organisées sous forme de télétravail (sur justificatif permanent) ou déplacements professionnels ne pouvant être différés.",
-    "shopping": "déplacements pour effectuer des achats de première nécessité dans des établissements autorisés (liste sur gouvernement.fr).",
-    "health": "déplacement pour motif de santé.",
-    "family": "déplacements pour motif familial impérieux, pour l’assistance aux personnes vulnérables ou la garde d’enfants.",
-    "walk": "déplacements brefs, à proximité du domicile, liés à l’activité physique individuelle des personnes, à l’exclusion de toute pratique sportive collective, et aux besoins des animaux de compagnie.",
-}
 
 
 def print_testimony(p, kind):
@@ -110,44 +159,158 @@ def print_signature(p, params):
     p.text(params["name"])
 
 
-
-
 def print_attestation(params):
     p = get_printer()
     print_title(p)
-
     print_personnal_informations(p, params)
-
     print_testimony(p, params["kind"])
-
     print_signature(p, params)
-
-
     p.cut()
 
+
+class PeopleDialog(qtw.QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        from ui_peopleEdit import Ui_peopleDiag
+
+        self.ui = Ui_peopleDiag()
+        self.ui.setupUi(self)
+        self.accepted.connect(self.ui_ok)
+
+    @qtc.pyqtSlot()
+    def on_maleRadio_clicked(self):
+        if len(self.ui.buttonBox.buttons()) < 2:
+            self.ui.buttonBox.addButton(qtw.QDialogButtonBox.Save)
+
+    @qtc.pyqtSlot()
+    def on_femaleRadio_clicked(self):
+        self.on_maleRadio_clicked()
+
+
+    def ui_ok(self):
+        db = get_db()
+        c = db.cursor()
+        c.execute(
+            "insert or replace into peoples (name, gender, birthdate, address, location) values (?, ?, ?, ?, ?)", (
+                self.ui.nameEdit.text(),
+                "male" if self.ui.maleRadio.isChecked() else "female",
+                self.ui.dateEdit.date().toPyDate(),
+                self.ui.addressEdit.toPlainText(),
+                self.ui.locationEdit.text(),
+            )
+        )
+
+        db.commit()
+        self.commited.emit()
+
+    commited = qtc.pyqtSignal()
+
+class MainForm(qtw.QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        from ui_main import Ui_Form
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
+        self.reloadList()
+
+
+    @qtc.pyqtSlot()
+    def on_addPeople_clicked(self):
+        add_dialog = PeopleDialog(self)
+        add_dialog.commited.connect(self.reloadList)
+        add_dialog.show()
+
+    @qtc.pyqtSlot()
+    def on_delPeople_clicked(self):
+        db = get_db()
+        c = db.cursor()
+        c.execute("delete from peoples where name == ?", (self.ui.peopleBox.currentText(), ))
+        self.ui.peopleBox.removeItem(self.ui.peopleBox.currentIndex())
+        db.commit()
+
+    @qtc.pyqtSlot()
+    def on_confButton_clicked(self):
+        major = qtw.QInputDialog.getText(self, "Paramétrage imprimante", "ID USB (majeur)")
+        if major[1] is False:
+            return
+        minor = qtw.QInputDialog.getText(self, "Paramétrage imprimante", "ID USB (mineur)")
+        if minor[1] is False:
+            return
+        set_printer_param(major[0], minor[0])
+
+
+    @qtc.pyqtSlot()
+    def on_work_clicked(self):
+        self.print_attestation("work")
+
+    @qtc.pyqtSlot()
+    def on_shopping_clicked(self):
+        self.print_attestation("shopping")
+
+    @qtc.pyqtSlot()
+    def on_health_clicked(self):
+        self.print_attestation("health")
+
+    @qtc.pyqtSlot()
+    def on_family_clicked(self):
+        self.print_attestation("family")
+
+    @qtc.pyqtSlot()
+    def on_walk_clicked(self):
+        self.print_attestation("walk")
+
+    def print_attestation(self,kind):
+        db = get_db()
+        c = db.cursor()
+        c.execute("select gender, birthdate, address, location from peoples where name == ?", (self.ui.peopleBox.currentText(), ))
+        r = c.fetchone()
+        params = {
+            "kind": kind,
+            "name": self.ui.peopleBox.currentText(),
+            "gender": r[0],
+            "birthdate": datetime.datetime.strptime(r[1], "%Y-%m-%d",),
+            "address": r[2],
+            "location": r[3],
+        }
+        print_attestation(params)
+
+
+    @qtc.pyqtSlot()
+    def reloadList(self):
+        db = get_db()
+        c = db.cursor()
+        c.execute("select name from peoples")
+        self.ui.peopleBox.clear()
+        for name in c:
+            self.ui.peopleBox.addItem(name[0])
+
+
+def set_printer_param(major, minor):
+
+    db = get_db()
+    db.execute(
+        "insert or replace into printer_conf ('conf_key', 'conf_value') values (?, ?), (?, ?);",
+        ["usb_major", major, "usb_minor", minor]
+    )
+
+    db.commit()
+
+
+
+def run_ui():
+    qtc.pyqtRemoveInputHook()
+    app = qtw.QApplication(sys.argv)
+    main_w = MainForm()
+
+    main_w.show()
+    return app.exec()
+
+
 if __name__ == "__main__":
+    run_ui()
 
-    #print_attestation(params={
-        #"name": "Emmanuel Coirier",
-        #"gender": "male",
-        #"birthdate": datetime.date(1982, 8, 19),
-        #"address": [
-            #"60 avenue Beauséjour",
-            #"94230 Cachan",
-        #],
-        #"kind": "shopping",
-        #"location": "Cachan",
-    #})
 
-    print_attestation(params={
-        "name": "Hélène Séguarra",
-        "gender": "female",
-        "birthdate": datetime.date(1978, 5, 9),
-        "address": [
-            "Quelque part dans Paris",
-            "75001 Paris",
-        ],
-        "kind": "walk",
-        "location": "Paris",
-    })
+
 
