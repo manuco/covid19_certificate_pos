@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>590</width>
-    <height>248</height>
+    <width>578</width>
+    <height>328</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,14 +82,28 @@
    <item>
     <widget class="QPushButton" name="family">
      <property name="text">
-      <string>Pour aller voir la famille</string>
+      <string>Pour aller voir la famille en difficulté</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="walk">
      <property name="text">
-      <string>Pour pratiquer une activité physique</string>
+      <string>Pour pratiquer une activité physique ou une promenade</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="police">
+     <property name="text">
+      <string>Pour répondre à une convocation administrative ou judiciaire</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="collective">
+     <property name="text">
+      <string>Pour une mission d'intérêt général</string>
      </property>
     </widget>
    </item>
@@ -102,8 +116,11 @@
   <tabstop>health</tabstop>
   <tabstop>family</tabstop>
   <tabstop>walk</tabstop>
+  <tabstop>police</tabstop>
+  <tabstop>collective</tabstop>
   <tabstop>addPeople</tabstop>
   <tabstop>delPeople</tabstop>
+  <tabstop>confButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

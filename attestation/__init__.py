@@ -16,17 +16,19 @@ import PyQt5.QtWidgets as qtw
 
 
 kinds = {
-    "work": "déplacements entre le domicile et le lieu d’exercice de l’activité professionnelle, lorsqu’ils sont indispensables à l’exercice d’activités ne pouvant être organisées sous forme de télétravail (sur justificatif permanent) ou déplacements professionnels ne pouvant être différés.",
-    "shopping": "déplacements pour effectuer des achats de première nécessité dans des établissements autorisés (liste sur gouvernement.fr).",
-    "health": "déplacement pour motif de santé.",
+    "work": "déplacements entre le domicile et le lieu d’exercice de l’activité professionnelle, lorsqu’ils sont indispensables à l’exercice d’activités ne pouvant être organisées sous forme de télétravail ou déplacements professionnels ne pouvant être différés.",
+    "shopping": "déplacements pour effectuer des achats de fournitures nécessaires à l’activité professionnelle et des achats de première nécessité dans des établissements dont les activités demeurent autorisées (liste sur gouvernement.fr)",
+    "health": "Consultations et soins ne pouvant être assurés à distance et ne pouvant être différés ; consultations et soins des patients atteints d'une affection de longue durée.",
     "family": "déplacements pour motif familial impérieux, pour l’assistance aux personnes vulnérables ou la garde d’enfants.",
-    "walk": "déplacements brefs, à proximité du domicile, liés à l’activité physique individuelle des personnes, à l’exclusion de toute pratique sportive collective, et aux besoins des animaux de compagnie.",
+    "walk": "déplacements brefs, dans la limite d'une heure quotidienne et dans un rayon maximal d'un kilomètre autour du domicile, liés soit à l'activité physique individuelle des personnes, à l'exclusion de toute pratique sportive collective et de toute proximité avec d'autres personnes, soit à la promenade avec les seules personnes regroupées dans un même domicile, soit aux besoins des animaux de compagnie.",
+    "police": "convocation judiciaire ou administrative",
+    "collective": "participation à des missions d’intérêt général sur demande de l’autorité administrative."
 }
 
 def get_db():
 
     db_file = pathlib.Path(qtc.QStandardPaths.writableLocation(qtc.QStandardPaths.ConfigLocation)) / "covid19pos.conf"
-
+    print(db_file)
     db = sqlite3.connect(str(db_file))
     c = db.cursor()
     c.execute("""create table if not exists printer_conf (
@@ -38,6 +40,7 @@ def get_db():
         name text PRIMARY KEY,
         gender text,
         birthdate text,
+        birthplace text,
         address text,
         location text
     )""")
@@ -68,9 +71,7 @@ def print_title(p):
     p.textln("ATTESTATION DE\nDÉPLACEMENT DÉROGATOIRE")
     p.ln()
     p.set(font="b", align="center")
-    p.text("En application de")
-    p.text(" l’article ")
-    p.text("1er du décret du 16 mars 2020\nportant réglementation des déplacements dans le cadre de\nla lutte contre la propagation du virus Covid-19 :")
+    print_with_prefix(p, "En application de l’article 3 du décret du 23 mars 2020 prescrivant les mesures générales nécessaires pour faire face à l’épidémie de Covid19 dans le cadre de l’état d’urgence sanitaire", max_len=65)
     p.ln(2)
     p.set(align="left", font="a")
 
@@ -93,6 +94,14 @@ def print_personnal_informations(p, params):
     p.set(bold=True)
     p.text(params["birthdate"].strftime("%d/%m/%Y"))
     p.ln()
+
+    p.set()
+    p.text("À\t\t")
+
+    p.set(bold=True)
+    p.text(params["birthplace"])
+    p.ln()
+
     p.set()
     p.textln("Demeurant")
 
@@ -122,16 +131,16 @@ def format_testimony(text, prefix_len=0, max_len=48):
     return lines
 
 
-def print_with_prefix(p, text, fl_prefix=""):
+def print_with_prefix(p, text, fl_prefix="", max_len=48):
     p.text(fl_prefix)
-    for line in format_testimony(text, prefix_len=len(fl_prefix)):
+    for line in format_testimony(text, prefix_len=len(fl_prefix), max_len=max_len):
         p.textln(line)
         p.text(" " * len(fl_prefix))
 
 
 def print_testimony(p, kind):
     p.set()
-    print_with_prefix(p, "certifie que mon déplacement est lié au motif suivant autorisé par l’article 1er du décret du 16 mars 2020 portant réglementation des déplacements dans le cadre de la lutte contre la propagation du virus Covid-19 :")
+    print_with_prefix(p, "certifie que mon déplacement est lié au motif suivant autorisé par l’article 3 du décret du 23 mars 2020 prescrivant les mesures générales nécessaires pour faire face à l’épidémie de Covid19 dans le cadre de l’état d’urgence sanitaire :")
     p.ln()
 
     p.set(bold=True)
@@ -148,7 +157,7 @@ def print_signature(p, params):
     p.set()
     p.text("Le :\t\t")
     p.set(bold=True)
-    p.textln(datetime.date.today().strftime("%d/%m/%Y"))
+    p.textln((datetime.datetime.now() + datetime.timedelta(seconds=7 * 60)).strftime("%d/%m/%Y à %H:%M"))
     p.set(bold=False)
 
     p.ln()
@@ -192,10 +201,11 @@ class PeopleDialog(qtw.QDialog):
         db = get_db()
         c = db.cursor()
         c.execute(
-            "insert or replace into peoples (name, gender, birthdate, address, location) values (?, ?, ?, ?, ?)", (
+            "insert or replace into peoples (name, gender, birthdate, birthplace, address, location) values (?, ?, ?, ?, ?, ?)", (
                 self.ui.nameEdit.text(),
                 "male" if self.ui.maleRadio.isChecked() else "female",
                 self.ui.dateEdit.date().toPyDate(),
+                self.ui.birthplaceEdit.text(),
                 self.ui.addressEdit.toPlainText(),
                 self.ui.locationEdit.text(),
             )
@@ -264,15 +274,16 @@ class MainForm(qtw.QWidget):
     def print_attestation(self,kind):
         db = get_db()
         c = db.cursor()
-        c.execute("select gender, birthdate, address, location from peoples where name == ?", (self.ui.peopleBox.currentText(), ))
+        c.execute("select gender, birthdate, birthplace, address, location from peoples where name == ?", (self.ui.peopleBox.currentText(), ))
         r = c.fetchone()
         params = {
             "kind": kind,
             "name": self.ui.peopleBox.currentText(),
             "gender": r[0],
             "birthdate": datetime.datetime.strptime(r[1], "%Y-%m-%d",),
-            "address": r[2],
-            "location": r[3],
+            "birthplace": r[2],
+            "address": r[3],
+            "location": r[4],
         }
         print_attestation(params)
 

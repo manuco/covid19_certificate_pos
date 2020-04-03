@@ -93,7 +93,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="5" column="0">
        <widget class="QLabel" name="addressLabel">
         <property name="text">
          <string>&amp;Adresse</string>
@@ -103,14 +103,14 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="5" column="1">
        <widget class="QPlainTextEdit" name="addressEdit">
         <property name="tabChangesFocus">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="locationLabel">
         <property name="text">
          <string>Emplacemen&amp;t</string>
@@ -120,8 +120,21 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="6" column="1">
        <widget class="QLineEdit" name="locationEdit"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Lieu de naissance</string>
+        </property>
+        <property name="buddy">
+         <cstring>birthplaceEdit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="birthplaceEdit"/>
       </item>
      </layout>
     </widget>
@@ -146,6 +159,7 @@
   <tabstop>maleRadio</tabstop>
   <tabstop>femaleRadio</tabstop>
   <tabstop>dateEdit</tabstop>
+  <tabstop>birthplaceEdit</tabstop>
   <tabstop>addressEdit</tabstop>
   <tabstop>locationEdit</tabstop>
  </tabstops>
