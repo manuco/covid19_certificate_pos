@@ -94,14 +94,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="police">
+    <widget class="QPushButton" name="legal">
      <property name="text">
       <string>Pour répondre à une convocation administrative ou judiciaire</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="collective">
+    <widget class="QPushButton" name="duty">
      <property name="text">
       <string>Pour une mission d'intérêt général</string>
      </property>
@@ -116,8 +116,8 @@
   <tabstop>health</tabstop>
   <tabstop>family</tabstop>
   <tabstop>walk</tabstop>
-  <tabstop>police</tabstop>
-  <tabstop>collective</tabstop>
+  <tabstop>legal</tabstop>
+  <tabstop>duty</tabstop>
   <tabstop>addPeople</tabstop>
   <tabstop>delPeople</tabstop>
   <tabstop>confButton</tabstop>
