@@ -208,6 +208,7 @@ def print_attestation(params):
 
     rp = get_printer()
     rp._raw(p.output)
+    rp.close()
 
 
 
@@ -266,7 +267,7 @@ class MainForm(qtw.QWidget):
             except AttributeError:
                 pass
 
-        self.selected_motives = set()
+        self.selected_motives = None
 
 
     @qtc.pyqtSlot()
@@ -296,6 +297,10 @@ class MainForm(qtw.QWidget):
 
     def keyPressEvent(self, evt):
         if evt.modifiers() & qtc.Qt.ControlModifier:
+            if self.selected_motives is not None:
+                return
+
+            self.selected_motives = set()
             for button in self.findChild(qtw.QWidget, "motives").children():
                 try:
                     button.setCheckable(True)
@@ -303,20 +308,26 @@ class MainForm(qtw.QWidget):
                     pass
 
 
-
     def keyReleaseEvent(self, evt):
-        if not (evt.modifiers() & qtc.Qt.ControlModifier):
-            for button in self.findChild(qtw.QWidget, "motives").children():
-                try:
-                    button.setChecked(False)
-                    button.setCheckable(False)
-                except AttributeError:
-                    pass
+        if self.selected_motives is None:
+            return
+
+        if (evt.modifiers() & qtc.Qt.ControlModifier):
+            return
+
+        for button in self.findChild(qtw.QWidget, "motives").children():
+            try:
+                button.setChecked(False)
+                button.setCheckable(False)
+            except AttributeError:
+                pass
 
 
-            selected_motives = [m for m in motives if m in self.selected_motives]
+        selected_motives = [m for m in motives if m in self.selected_motives]
+        if len(selected_motives) > 0:
             self.print_attestation(selected_motives)
-            self.selected_motives = set()
+
+        self.selected_motives = None
 
     def select_motive(self, motive):
         if qtw.QApplication.keyboardModifiers() & qtc.Qt.ControlModifier:
