@@ -7,6 +7,7 @@ import pathlib
 import sqlite3
 
 import escpos.printer as ep
+import escpos.constants as epc
 
 import PyQt5.QtCore as qtc
 import PyQt5.QtGui as qtg
@@ -147,7 +148,25 @@ def print_testimony(p, req_motives):
         p.set(bold=True)
         print_with_prefix(p, motives[motive], "- ")
         p.ln()
+qr_pattern = "Cree le: {qr_creation_date}; Nom: {qr_name}; Prenom: {qr_firstname}; Naissance: {qr_birthdate} a {birthplace}; Adresse: {qr_address}; Sortie: {qr_exit_date}; Motifs: {qr_motives}"
+
+
+def print_qr(p, params):
+    params["qr_exit_date"] = params["exit_date"].strftime("%d/%m/%Y a %Hh%M")
+    params["qr_creation_date"] = params["creation_date"].strftime("%d/%m/%Y a %Hh%M")
+    params["qr_birthdate"] = params["birthdate"].strftime("%d/%m/%Y")
+    params["qr_motives"] = "-".join(params["motives"])
+    params["qr_address"] = " ".join(params["address"].split())
+    params["qr_name"] = params["name"].split()[-1]
+    params["qr_firstname"] = " ".join(params["name"].split()[0:-1])
+
+    qr_text = qr_pattern.format(**params)
+
+    p.set(align="center")
+    p.qr(qr_text, ec=epc.QR_ECLEVEL_M, size=6, native=True)
+    p.set()
     p.ln()
+
 
 def print_signature(p, params):
     p.set()
@@ -179,6 +198,7 @@ def print_attestation(params):
     print_title(p)
     print_personnal_informations(p, params)
     print_testimony(p, params["motives"])
+    print_qr(p, params)
     print_signature(p, params)
     p.cut()
 
