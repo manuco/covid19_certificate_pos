@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>578</width>
-    <height>328</height>
+    <height>340</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,71 +53,83 @@
     </layout>
    </item>
    <item>
-    <widget class="QPushButton" name="work">
-     <property name="text">
-      <string>Pour aller au travail</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="shopping">
-     <property name="text">
-      <string>Pour aller faire les courses</string>
-     </property>
-     <property name="autoDefault">
-      <bool>true</bool>
-     </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="health">
-     <property name="text">
-      <string>Pour aller dans un établissement médical</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="family">
-     <property name="text">
-      <string>Pour aller voir la famille en difficulté</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="walk">
-     <property name="text">
-      <string>Pour pratiquer une activité physique ou une promenade</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="legal">
-     <property name="text">
-      <string>Pour répondre à une convocation administrative ou judiciaire</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="duty">
-     <property name="text">
-      <string>Pour une mission d'intérêt général</string>
-     </property>
+    <widget class="QWidget" name="motives" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="travail">
+        <property name="text">
+         <string>Pour aller au travail</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="courses">
+        <property name="text">
+         <string>Pour aller faire les courses</string>
+        </property>
+        <property name="autoDefault">
+         <bool>true</bool>
+        </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="sante">
+        <property name="text">
+         <string>Pour aller dans un établissement médical</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="famille">
+        <property name="text">
+         <string>Pour aller voir la famille en difficulté</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="sport">
+        <property name="text">
+         <string>Pour pratiquer une activité physique ou une promenade</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="judiciaire">
+        <property name="text">
+         <string>Pour répondre à une convocation administrative ou judiciaire</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="missions">
+        <property name="text">
+         <string>Pour une mission d'intérêt général</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
  </widget>
  <tabstops>
+  <tabstop>travail</tabstop>
+  <tabstop>courses</tabstop>
+  <tabstop>sante</tabstop>
+  <tabstop>famille</tabstop>
+  <tabstop>sport</tabstop>
+  <tabstop>judiciaire</tabstop>
+  <tabstop>missions</tabstop>
   <tabstop>peopleBox</tabstop>
-  <tabstop>work</tabstop>
-  <tabstop>shopping</tabstop>
-  <tabstop>health</tabstop>
-  <tabstop>family</tabstop>
-  <tabstop>walk</tabstop>
-  <tabstop>legal</tabstop>
-  <tabstop>duty</tabstop>
   <tabstop>addPeople</tabstop>
   <tabstop>delPeople</tabstop>
   <tabstop>confButton</tabstop>

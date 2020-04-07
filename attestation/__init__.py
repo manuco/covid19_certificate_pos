@@ -29,7 +29,7 @@ motives = {
 def get_db():
 
     db_file = pathlib.Path(qtc.QStandardPaths.writableLocation(qtc.QStandardPaths.ConfigLocation)) / "covid19pos.conf"
-    print(db_file)
+
     db = sqlite3.connect(str(db_file))
     c = db.cursor()
     c.execute("""create table if not exists printer_conf (
@@ -260,6 +260,14 @@ class MainForm(qtw.QWidget):
         self.ui.setupUi(self)
         self.reloadList()
 
+        for button in self.findChild(qtw.QWidget, "motives").children():
+            try:
+                button.clicked.connect(self.motive_clicked)
+            except AttributeError:
+                pass
+
+        self.selected_motives = set()
+
 
     @qtc.pyqtSlot()
     def on_addPeople_clicked(self):
@@ -286,36 +294,43 @@ class MainForm(qtw.QWidget):
         set_printer_param(major[0], minor[0])
 
 
+    def keyPressEvent(self, evt):
+        if evt.modifiers() & qtc.Qt.ControlModifier:
+            for button in self.findChild(qtw.QWidget, "motives").children():
+                try:
+                    button.setCheckable(True)
+                except AttributeError:
+                    pass
+
+
+
+    def keyReleaseEvent(self, evt):
+        if not (evt.modifiers() & qtc.Qt.ControlModifier):
+            for button in self.findChild(qtw.QWidget, "motives").children():
+                try:
+                    button.setChecked(False)
+                    button.setCheckable(False)
+                except AttributeError:
+                    pass
+
+
+            selected_motives = [m for m in motives if m in self.selected_motives]
+            self.print_attestation(selected_motives)
+            self.selected_motives = set()
+
     def select_motive(self, motive):
-        self.print_attestation([motive])
+        if qtw.QApplication.keyboardModifiers() & qtc.Qt.ControlModifier:
+            if self.sender().isChecked():
+                self.selected_motives |= set((motive, ))
+            else:
+                self.selected_motives -= set((motive, ))
+        else:
+            self.print_attestation([motive])
 
     @qtc.pyqtSlot()
-    def on_work_clicked(self):
-        self.select_motive("travail")
-
-    @qtc.pyqtSlot()
-    def on_shopping_clicked(self):
-        self.select_motive("courses")
-
-    @qtc.pyqtSlot()
-    def on_health_clicked(self):
-        self.select_motive("sante")
-
-    @qtc.pyqtSlot()
-    def on_family_clicked(self):
-        self.select_motive("famille")
-
-    @qtc.pyqtSlot()
-    def on_walk_clicked(self):
-        self.select_motive("sport")
-
-    @qtc.pyqtSlot()
-    def on_legal_clicked(self):
-        self.select_motive("judiciaire")
-
-    @qtc.pyqtSlot()
-    def on_duty_clicked(self):
-        self.select_motive("missions")
+    def motive_clicked(self):
+        name = self.sender().objectName()
+        self.select_motive(name)
 
 
     def print_attestation(self, motives):
