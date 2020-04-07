@@ -15,14 +15,14 @@ import PyQt5.QtWidgets as qtw
 
 
 
-kinds = {
-    "work": "déplacements entre le domicile et le lieu d’exercice de l’activité professionnelle, lorsqu’ils sont indispensables à l’exercice d’activités ne pouvant être organisées sous forme de télétravail ou déplacements professionnels ne pouvant être différés.",
-    "shopping": "déplacements pour effectuer des achats de fournitures nécessaires à l’activité professionnelle et des achats de première nécessité dans des établissements dont les activités demeurent autorisées (liste sur gouvernement.fr)",
-    "health": "Consultations et soins ne pouvant être assurés à distance et ne pouvant être différés ; consultations et soins des patients atteints d'une affection de longue durée.",
-    "family": "déplacements pour motif familial impérieux, pour l’assistance aux personnes vulnérables ou la garde d’enfants.",
-    "walk": "déplacements brefs, dans la limite d'une heure quotidienne et dans un rayon maximal d'un kilomètre autour du domicile, liés soit à l'activité physique individuelle des personnes, à l'exclusion de toute pratique sportive collective et de toute proximité avec d'autres personnes, soit à la promenade avec les seules personnes regroupées dans un même domicile, soit aux besoins des animaux de compagnie.",
-    "police": "convocation judiciaire ou administrative",
-    "collective": "participation à des missions d’intérêt général sur demande de l’autorité administrative."
+motives = {
+    "travail": "déplacements entre le domicile et le lieu d’exercice de l’activité professionnelle, lorsqu’ils sont indispensables à l’exercice d’activités ne pouvant être organisées sous forme de télétravail ou déplacements professionnels ne pouvant être différés.",
+    "courses": "déplacements pour effectuer des achats de fournitures nécessaires à l’activité professionnelle et des achats de première nécessité dans des établissements dont les activités demeurent autorisées (liste sur gouvernement.fr)",
+    "sante": "Consultations et soins ne pouvant être assurés à distance et ne pouvant être différés ; consultations et soins des patients atteints d'une affection de longue durée.",
+    "famille": "déplacements pour motif familial impérieux, pour l’assistance aux personnes vulnérables ou la garde d’enfants.",
+    "sport": "déplacements brefs, dans la limite d'une heure quotidienne et dans un rayon maximal d'un kilomètre autour du domicile, liés soit à l'activité physique individuelle des personnes, à l'exclusion de toute pratique sportive collective et de toute proximité avec d'autres personnes, soit à la promenade avec les seules personnes regroupées dans un même domicile, soit aux besoins des animaux de compagnie.",
+    "judiciaire": "convocation judiciaire ou administrative",
+    "missions": "participation à des missions d’intérêt général sur demande de l’autorité administrative."
 }
 
 def get_db():
@@ -138,13 +138,15 @@ def print_with_prefix(p, text, fl_prefix="", max_len=48):
         p.text(" " * len(fl_prefix))
 
 
-def print_testimony(p, kind):
+def print_testimony(p, req_motives):
     p.set()
     print_with_prefix(p, "certifie que mon déplacement est lié au motif suivant autorisé par l’article 3 du décret du 23 mars 2020 prescrivant les mesures générales nécessaires pour faire face à l’épidémie de Covid19 dans le cadre de l’état d’urgence sanitaire :")
     p.ln()
 
-    p.set(bold=True)
-    print_with_prefix(p, kinds[kind], "- ")
+    for motive in req_motives:
+        p.set(bold=True)
+        print_with_prefix(p, motives[motive], "- ")
+        p.ln()
     p.ln()
 
 def print_signature(p, params):
@@ -157,7 +159,11 @@ def print_signature(p, params):
     p.set()
     p.text("Le :\t\t")
     p.set(bold=True)
-    p.textln((datetime.datetime.now() + datetime.timedelta(seconds=7 * 60)).strftime("%d/%m/%Y à %H:%M"))
+    p.text(params["exit_date"].strftime("%d/%m/%Y"))
+    p.set(bold=False)
+    p.text(" à ")
+    p.set(bold=True)
+    p.textln(params["exit_date"].strftime("%H:%M"))
     p.set(bold=False)
 
     p.ln()
@@ -172,7 +178,7 @@ def print_attestation(params):
     p = get_printer()
     print_title(p)
     print_personnal_informations(p, params)
-    print_testimony(p, params["kind"])
+    print_testimony(p, params["motives"])
     print_signature(p, params)
     p.cut()
 
@@ -251,39 +257,57 @@ class MainForm(qtw.QWidget):
         set_printer_param(major[0], minor[0])
 
 
+    def select_motive(self, motive):
+        self.print_attestation([motive])
+
     @qtc.pyqtSlot()
     def on_work_clicked(self):
-        self.print_attestation("work")
+        self.select_motive("travail")
 
     @qtc.pyqtSlot()
     def on_shopping_clicked(self):
-        self.print_attestation("shopping")
+        self.select_motive("courses")
 
     @qtc.pyqtSlot()
     def on_health_clicked(self):
-        self.print_attestation("health")
+        self.select_motive("sante")
 
     @qtc.pyqtSlot()
     def on_family_clicked(self):
-        self.print_attestation("family")
+        self.select_motive("famille")
 
     @qtc.pyqtSlot()
     def on_walk_clicked(self):
-        self.print_attestation("walk")
+        self.select_motive("sport")
 
-    def print_attestation(self,kind):
+    @qtc.pyqtSlot()
+    def on_legal_clicked(self):
+        self.select_motive("judiciaire")
+
+    @qtc.pyqtSlot()
+    def on_duty_clicked(self):
+        self.select_motive("missions")
+
+
+    def print_attestation(self, motives):
         db = get_db()
         c = db.cursor()
         c.execute("select gender, birthdate, birthplace, address, location from peoples where name == ?", (self.ui.peopleBox.currentText(), ))
         r = c.fetchone()
+
+        creation_date = datetime.datetime.now();
+        exit_date = creation_date + datetime.timedelta(seconds=60*7)
+
         params = {
-            "kind": kind,
+            "motives": motives,
             "name": self.ui.peopleBox.currentText(),
             "gender": r[0],
             "birthdate": datetime.datetime.strptime(r[1], "%Y-%m-%d",),
             "birthplace": r[2],
             "address": r[3],
             "location": r[4],
+            "exit_date": exit_date,
+            "creation_date": creation_date,
         }
         print_attestation(params)
 
