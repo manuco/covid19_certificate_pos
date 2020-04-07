@@ -51,7 +51,10 @@ def get_db():
     return db
 
 
-def get_printer():
+def get_printer(dummy=False):
+
+    if dummy:
+        return ep.Dummy()
 
     db = get_db()
     c = db.cursor()
@@ -148,6 +151,7 @@ def print_testimony(p, req_motives):
         p.set(bold=True)
         print_with_prefix(p, motives[motive], "- ")
         p.ln()
+
 qr_pattern = "Cree le: {qr_creation_date}; Nom: {qr_name}; Prenom: {qr_firstname}; Naissance: {qr_birthdate} a {birthplace}; Adresse: {qr_address}; Sortie: {qr_exit_date}; Motifs: {qr_motives}"
 
 
@@ -194,13 +198,18 @@ def print_signature(p, params):
 
 
 def print_attestation(params):
-    p = get_printer()
+    p = get_printer(dummy=True)
     print_title(p)
     print_personnal_informations(p, params)
     print_testimony(p, params["motives"])
     print_qr(p, params)
     print_signature(p, params)
     p.cut()
+
+    rp = get_printer()
+    rp._raw(p.output)
+
+
 
 
 class PeopleDialog(qtw.QDialog):
