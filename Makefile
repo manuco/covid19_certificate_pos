@@ -4,7 +4,7 @@ pkg_clean: clean
 	*.egg-info
 
 clean:
-	rm -rf covid19certificate/ui_main.py covid19certificate/ui_peopleEdit.py __pycache__
+	rm -rf covid19certificate/ui_main.py covid19certificate/ui_peopleEdit.py __pycache__ build dist
 
 covid19certificate/ui_main.py: main.ui
 	pyuic5 main.ui > covid19certificate/ui_main.py
