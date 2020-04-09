@@ -15,7 +15,7 @@ setup(
     ],
     entry_points = {
         'console_scripts': [
-            'att_covid19 = attestation:run_ui',
+            'covid19_certificate_pos = covid19certificate:run_ui',
         ],
     }
 )
