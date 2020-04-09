@@ -6,8 +6,11 @@ import pathlib
 
 import sqlite3
 
+import usb.core
+
 import escpos.printer as ep
 import escpos.constants as epc
+import escpos.exceptions
 
 import PyQt5.QtCore as qtc
 import PyQt5.QtGui as qtg
@@ -197,6 +200,8 @@ def print_signature(p, params):
     p.text(params["name"])
 
 
+class PrinterError(Exception): pass
+
 def print_attestation(params):
     p = get_printer(dummy=True)
     print_title(p)
@@ -206,9 +211,17 @@ def print_attestation(params):
     print_signature(p, params)
     p.cut()
 
+
     rp = get_printer()
-    rp._raw(p.output)
-    rp.close()
+    try:
+        #if not rp.is_online():
+            #raise PrinterError("Imprimante indisponible")
+
+        #if rp.paper_status() == 0:
+            #raise PrinterError("Pas de papier dans l'imprimante")
+        rp._raw(p.output)
+    finally:
+        rp.close()
 
 
 
@@ -364,7 +377,15 @@ class MainForm(qtw.QWidget):
             "exit_date": exit_date,
             "creation_date": creation_date,
         }
-        print_attestation(params)
+
+        try:
+            print_attestation(params)
+        except escpos.exceptions.USBNotFoundError as e:
+            qtw.QMessageBox.critical(self, "Erreur d'impression", "Erreur lors de l'impression :\n" + e.msg)
+        except usb.core.USBError as e:
+            qtw.QMessageBox.critical(self, "Erreur de communication", "Erreur lors de l'impression :\n" + e.args[1] )
+        except PrinterError as e:
+            qtw.QMessageBox.critical(self, "Erreur d'impression", e.args[0])
 
 
     @qtc.pyqtSlot()
